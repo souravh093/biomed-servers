@@ -1,14 +1,13 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
-require('dotenv').config()
+const cors = require("cors");
+const { MongoClient, ServerApiVersion } = require("mongodb");
+require("dotenv").config();
 
 const port = process.env.PORT || 5000;  
 
 app.use(cors());
 app.use(express.json());
-
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.2sex9a1.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -18,7 +17,7 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
@@ -26,10 +25,46 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
+    const usersCollection = client.db("biomedDB").collection("users");
+
+    // save user in database with email and role
+    app.put("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const query = { email: email };
+      const options = { upsert: true };
+
+      const updateInfo = {
+        $set: user,
+      };
+
+      const result = await usersCollection.updateOne(
+        query,
+        updateInfo,
+        options
+      );
+      res.send(result);
+    });
+
+    // get role
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    });
+
+    // get all users
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
@@ -37,11 +72,10 @@ async function run() {
 }
 run().catch(console.dir);
 
-
-app.get('/', (req, res) => {
-    res.send('biomed server is on')
-})
+app.get("/", (req, res) => {
+  res.send("biomed server is on");
+});
 
 app.listen(port, () => {
-    console.log( `Sports is  on Port ${port}`);
-})
+  console.log(`Sports is  on Port ${port}`);
+});
