@@ -59,6 +59,46 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
+    
+    // update user Profile
+    app.patch("/updateProfile/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const body = req.body;
+    
+        // Modify the properties to match your data structure
+        const filter = { _id: new ObjectId(id) };
+        const updateProfile = {
+          $set: {
+            name: body.name2,
+            city: body.city,
+            country: body.country,
+            education: body.education,
+            email: body.email,
+            currentSalary: body.currentSalary,
+            expectedSalary: body.expectedSalary,
+            experience: body.experience,
+            age: body.age,
+            facebook: body.facebook,
+            jobTitle: body.jobTitle,
+            language: body.language,
+            linkedin: body.linkedin,
+            phone: body.phone,
+            website: body.website,
+            description: body.description,
+            image: body.image,
+          },
+        };
+    
+        const result = await usersCollection.updateOne(filter, updateProfile);
+    
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal server error");
+      }
+    });
+    
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
