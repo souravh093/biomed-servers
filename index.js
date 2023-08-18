@@ -61,6 +61,14 @@ async function run() {
       res.send(result);
     });
 
+    // get single user
+    app.get('/user/:email', async (req, res)=>{
+      const email = req.params.email;
+      const query = {email: email}
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    })
+    
     // post a job
     app.post("/jobs", async (req, res) => {
       const job = req.body;
