@@ -27,6 +27,7 @@ async function run() {
 
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
+    const applidejobsCollection= client.db("biomedDB").collection("appliedjobs");
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -60,7 +61,7 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
-
+    
     // post a job
     app.post("/jobs", async (req, res) => {
       const job = req.body;
@@ -71,6 +72,12 @@ async function run() {
     // get all jobs
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // get all applidejobs
+    app.get("/applidejobs", async (req, res) => {
+      const result = await applidejobsCollection.find().toArray();
       res.send(result);
     });
 
