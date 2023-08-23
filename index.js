@@ -40,7 +40,7 @@ async function run() {
         $set: user,
       };
 
-      const result = await usersCollection.updateOne(
+      const result = await usersCollection.updateOne(   
         query,
         updateInfo,
         options
