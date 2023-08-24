@@ -1,7 +1,13 @@
+
+//external imports 
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+
+// internal imports 
+const notFoundHandler = require('./middlewares/common/errorHandler')
+
 require("dotenv").config();
 
 const port = process.env.PORT || 5000;
@@ -81,7 +87,7 @@ async function run() {
       res.send(result);
     });
 
-    // get single job
+    // get single jobn
     app.get("/job/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -105,6 +111,14 @@ run().catch(console.dir);
 app.get("/", (req, res) => {
   res.send("biomed server is on");
 });
+
+
+// 404 not found handler
+app.use(notFoundHandler)
+
+
+
+
 
 app.listen(port, () => {
   console.log(`Sports is  on Port ${port}`);
