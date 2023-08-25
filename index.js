@@ -28,7 +28,9 @@ async function run() {
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
     const blogsCollection = client.db("biomedDB").collection("blogs");
-    const applidejobsCollection= client.db("biomedDB").collection("appliedjobs");
+    const applidejobsCollection = client
+      .db("biomedDB")
+      .collection("appliedjobs");
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -41,7 +43,7 @@ async function run() {
         $set: user,
       };
 
-      const result = await usersCollection.updateOne(   
+      const result = await usersCollection.updateOne(
         query,
         updateInfo,
         options
@@ -98,12 +100,39 @@ async function run() {
     });
 
     // getting single blog
-    app.get('/blogs/:id', async (req, res)=>{
+    app.get("/blogs/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await blogsCollection.findOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
+
+    // admin dashboard
+    // get all client
+    app.get("/clients", async (req, res) => {
+      try {
+        const query = { client: true };
+        const result = await usersCollection.find(query).toArray();
+        
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching client users:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.get("/moderators", async (req, res) => {
+      try {
+        const query = { moderator: true };
+        const result = await usersCollection.find(query).toArray();
+        
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching moderator users:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+    
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
