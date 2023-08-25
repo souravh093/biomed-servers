@@ -113,7 +113,7 @@ async function run() {
       try {
         const query = { client: true };
         const result = await usersCollection.find(query).toArray();
-        
+
         res.send(result);
       } catch (error) {
         console.error("Error fetching client users:", error);
@@ -125,14 +125,22 @@ async function run() {
       try {
         const query = { moderator: true };
         const result = await usersCollection.find(query).toArray();
-        
+
         res.send(result);
       } catch (error) {
         console.error("Error fetching moderator users:", error);
         res.status(500).send("Internal Server Error");
       }
     });
-    
+
+    app.get("/allusers", async (req, res) => {
+      const allUsers = await usersCollection.find().toArray();
+
+      const filterUsers = allUsers.filter(
+        (user) => !(user.client || user.moderator || user.admin)
+      );
+      res.send(filterUsers);
+    });
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
