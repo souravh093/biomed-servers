@@ -79,8 +79,10 @@ async function run() {
     });
 
     // get all applidejobs
-    app.get("/applidejobs", async (req, res) => {
-      const result = await applidejobsCollection.find().toArray();
+    app.get("/applidejobs/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { "appliedjobdata.email": email };
+      const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -107,6 +109,13 @@ async function run() {
       res.send(result);
     });
 
+    // store apply job
+    app.post("/appliedjob", async (req, res) => {
+      const appliedjobdata = req.body;
+
+      const result = await applidejobsCollection.insertOne({ appliedjobdata });
+      res.send(result);
+    });
     // admin dashboard
     // get all client
     app.get("/clients", async (req, res) => {
