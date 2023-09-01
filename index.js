@@ -72,6 +72,14 @@ async function run() {
       res.send(result);
     });
 
+    // get single job
+    app.get("/jobs/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // get all jobs
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().toArray();
@@ -87,7 +95,7 @@ async function run() {
     });
 
     // get single job
-    app.get("/jobs/:id", async (req, res) => {
+    app.get("/singlejob/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
 
@@ -116,6 +124,7 @@ async function run() {
       const result = await applidejobsCollection.insertOne({ appliedjobdata });
       res.send(result);
     });
+
     // admin dashboard
     // get all client
     app.get("/clients", async (req, res) => {
