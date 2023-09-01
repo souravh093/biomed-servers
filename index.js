@@ -28,8 +28,13 @@ async function run() {
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
     const blogsCollection = client.db("biomedDB").collection("blogs");
-    const applidejobsCollection= client.db("biomedDB").collection("appliedjobs");
-    const SocialMediaCollection = client.db("biomedDB").collection("social-media");
+    const applidejobsCollection = client
+      .db("biomedDB")
+      .collection("appliedjobs");
+
+    const SocialMediaCollection = client
+      .db("biomedDB")
+      .collection("social-media");
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -177,22 +182,26 @@ async function run() {
       const result = await SocialMediaCollection.findOne(query);
       res.send(result);
     });
-    app.put('/social-media/:id',async(req,res)=>{
+    app.put("/social-media/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)};
-      const options = {upsert : true};
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
       const updatedSocialMedia = req.body;
       const SocialMedia = {
-          $set: {
-            facebook: updatedSocialMedia.facebook,
-            linkedin: updatedSocialMedia.linkedin,
-            instagram: updatedSocialMedia.instagram,
-            twitter: updatedSocialMedia.twitter
-          }
-      }
-      const result = await SocialMediaCollection.updateOne(filter,SocialMedia,options);
+        $set: {
+          facebook: updatedSocialMedia.facebook,
+          linkedin: updatedSocialMedia.linkedin,
+          instagram: updatedSocialMedia.instagram,
+          twitter: updatedSocialMedia.twitter,
+        },
+      };
+      const result = await SocialMediaCollection.updateOne(
+        filter,
+        SocialMedia,
+        options
+      );
       res.send(result);
-  })
+    });
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
