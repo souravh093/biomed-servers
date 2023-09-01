@@ -28,8 +28,13 @@ async function run() {
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
     const blogsCollection = client.db("biomedDB").collection("blogs");
-    const applidejobsCollection= client.db("biomedDB").collection("appliedjobs");
-    const SocialMediaCollection = client.db("biomedDB").collection("social-media");
+    const applidejobsCollection = client
+      .db("biomedDB")
+      .collection("appliedjobs");
+
+    const SocialMediaCollection = client
+      .db("biomedDB")
+      .collection("social-media");
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -71,6 +76,14 @@ async function run() {
       res.send(result);
     });
 
+    // get single job
+    app.get("/jobs/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // get all jobs
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().toArray();
@@ -78,13 +91,15 @@ async function run() {
     });
 
     // get all applidejobs
-    app.get("/applidejobs", async (req, res) => {
-      const result = await applidejobsCollection.find().toArray();
+    app.get("/applidejobs/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { "appliedjobdata.email": email };
+      const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
     });
 
     // get single job
-    app.get("/jobs/:id", async (req, res) => {
+    app.get("/singlejob/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
 
@@ -105,12 +120,55 @@ async function run() {
     });
 
     // getting single blog
-    app.get('/blogs/:id', async (req, res)=>{
+    app.get("/blogs/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await blogsCollection.findOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
+
+    // store apply job
+    app.post("/appliedjob", async (req, res) => {
+      const appliedjobdata = req.body;
+
+      const result = await applidejobsCollection.insertOne({ appliedjobdata });
+      res.send(result);
+    });
+
+    // admin dashboard
+    // get all client
+    app.get("/clients", async (req, res) => {
+      try {
+        const query = { client: true };
+        const result = await usersCollection.find(query).toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching client users:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.get("/moderators", async (req, res) => {
+      try {
+        const query = { moderator: true };
+        const result = await usersCollection.find(query).toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching moderator users:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.get("/allusers", async (req, res) => {
+      const allUsers = await usersCollection.find().toArray();
+
+      const filterUsers = allUsers.filter(
+        (user) => !(user.client || user.moderator || user.admin)
+      );
+      res.send(filterUsers);
+    });
 
     // social media'
     app.get("/social-media", async (req, res) => {
@@ -124,22 +182,26 @@ async function run() {
       const result = await SocialMediaCollection.findOne(query);
       res.send(result);
     });
-    app.put('/social-media/:id',async(req,res)=>{
+    app.put("/social-media/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)};
-      const options = {upsert : true};
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
       const updatedSocialMedia = req.body;
       const SocialMedia = {
-          $set: {
-            facebook: updatedSocialMedia.facebook,
-            linkedin: updatedSocialMedia.linkedin,
-            instagram: updatedSocialMedia.instagram,
-            twitter: updatedSocialMedia.twitter
-          }
-      }
-      const result = await SocialMediaCollection.updateOne(filter,SocialMedia,options);
+        $set: {
+          facebook: updatedSocialMedia.facebook,
+          linkedin: updatedSocialMedia.linkedin,
+          instagram: updatedSocialMedia.instagram,
+          twitter: updatedSocialMedia.twitter,
+        },
+      };
+      const result = await SocialMediaCollection.updateOne(
+        filter,
+        SocialMedia,
+        options
+      );
       res.send(result);
-  })
+    });
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
