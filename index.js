@@ -5,8 +5,6 @@ const app = express();
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
-// internal imports 
-const notFoundHandler = require('./middlewares/common/errorHandler')
 
 require("dotenv").config();
 
@@ -111,13 +109,6 @@ run().catch(console.dir);
 app.get("/", (req, res) => {
   res.send("biomed server is on");
 });
-
-
-// 404 not found handler
-app.use(notFoundHandler)
-
-
-
 
 
 app.listen(port, () => {
