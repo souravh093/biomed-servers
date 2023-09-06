@@ -1,10 +1,8 @@
-
-//external imports 
+//external imports
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-
 
 require("dotenv").config();
 
@@ -31,7 +29,9 @@ async function run() {
 
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
-    const applidejobsCollection= client.db("biomedDB").collection("appliedjobs");
+    const applidejobsCollection = client
+      .db("biomedDB")
+      .collection("appliedjobs");
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -85,13 +85,25 @@ async function run() {
       res.send(result);
     });
 
+    //get all allApplyJob by user email
+    app.get("/allApplyJob", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        query = { "appliedjobdata.email": req.query.email };
+      }
+      const result = await applidejobsCollection.find(query).toArray();
+
+      res.send(result);
+    });
+
+
     // get single jobn
     app.get("/job/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      
-      const result = await jobsCollection.findOne(query)
-      res.send(result)
+
+      const result = await jobsCollection.findOne(query);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
@@ -107,9 +119,8 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("biomed server is on");
+  res.json("biomed server is on");
 });
-
 
 app.listen(port, () => {
   console.log(`Sports is  on Port ${port}`);
