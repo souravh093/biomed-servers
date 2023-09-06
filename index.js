@@ -58,12 +58,39 @@ async function run() {
       res.send(result);
     });
 
+ 
+
     // get role
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
       res.send(result);
+    });
+
+    // update task when apply this task
+    app.put("/jobs/:id/apply", async (req, res) => {
+      const taskId = req.params.id;
+
+      try {
+        const job = await jobsCollection.findOne({ _id: new ObjectId(taskId) });
+
+        if (!job) {
+          return res.status(404).json({ error: "Task not found" });
+        }
+
+        const appliedCount = (job.appliedCount || 0) + 1;
+
+        const result = await jobsCollection.updateOne(
+          { _id: new ObjectId(taskId) },
+          { $set: { appliedCount } }
+        );
+
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Internal server error" });
+      }
     });
 
     // get all users
@@ -102,7 +129,25 @@ async function run() {
       res.send(result);
     });
 
-    // get single jobn
+    app.put("/appliedjob/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateData = req.body;
+      const query = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+      const updateDoc = {
+        $set: updateData,
+      };
+
+      const result = await applidejobsCollection.updateOne(
+        query,
+        updateDoc,
+        option
+      );
+
+      res.send(result);
+    });
+
+    // get single job
     app.get("/job/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -141,7 +186,11 @@ async function run() {
 
     // getting testimonials data
     app.get("/testimonials", async (req, res) => {
-      const result = await testimonialsCollection.find().toArray();
+      const result = await testimonialsCollection
+        .find()
+        .sort({ _id: -1 })
+        .limit(7)
+        .toArray();
       res.send(result);
     });
 
