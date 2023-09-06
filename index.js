@@ -63,6 +63,31 @@ async function run() {
       res.send(result);
     });
 
+    // update task when apply this task
+    app.put("/jobs/:id/apply", async (req, res) => {
+      const taskId = req.params.id;
+
+      try {
+        const job = await jobsCollection.findOne({ _id: new ObjectId(taskId) });
+
+        if (!job) {
+          return res.status(404).json({ error: "Task not found" });
+        }
+
+        const appliedCount = (job.appliedCount || 0) + 1;
+
+        const result = await jobsCollection.updateOne(
+          { _id: new ObjectId(taskId) },
+          { $set: { appliedCount } }
+        );
+
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+    });
+
     // get all users
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
