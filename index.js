@@ -1,7 +1,9 @@
+//external imports
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+
 require("dotenv").config();
 
 const port = process.env.PORT || 5000;
@@ -27,7 +29,6 @@ async function run() {
 
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
-    const blogsCollection = client.db("biomedDB").collection("blogs");
     const applidejobsCollection = client
       .db("biomedDB")
       .collection("appliedjobs");
@@ -78,14 +79,6 @@ async function run() {
       res.send(result);
     });
 
-    // get single job
-    app.get("/jobs/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const result = await jobsCollection.find(query).toArray();
-      res.send(result);
-    });
-
     // get all jobs
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().toArray();
@@ -93,15 +86,24 @@ async function run() {
     });
 
     // get all applidejobs
-    app.get("/applidejobs/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { "appliedjobdata.email": email };
-      const result = await applidejobsCollection.find(query).toArray();
+    app.get("/applidejobs", async (req, res) => {
+      const result = await applidejobsCollection.find().toArray();
       res.send(result);
     });
 
-    // get single job
-    app.get("/singlejob/:id", async (req, res) => {
+    //get all allApplyJob by user email
+    app.get("/allApplyJob", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        query = { "appliedjobdata.email": req.query.email };
+      }
+      const result = await applidejobsCollection.find(query).toArray();
+
+      res.send(result);
+    });
+
+    // get single jobn
+    app.get("/job/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
 
@@ -137,11 +139,11 @@ async function run() {
       console.log(result);
     });
 
-      // getting testimonials data
-      app.get("/testimonials", async (req, res) => {
-        const result = await testimonialsCollection.find().toArray();
-        res.send(result);
-      });
+    // getting testimonials data
+    app.get("/testimonials", async (req, res) => {
+      const result = await testimonialsCollection.find().toArray();
+      res.send(result);
+    });
 
     // store apply job
     app.post("/appliedjob", async (req, res) => {
@@ -232,7 +234,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("biomed server is on");
+  res.json("biomed server is on");
 });
 
 app.listen(port, () => {
