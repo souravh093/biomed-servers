@@ -28,7 +28,12 @@ async function run() {
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
     const blogsCollection = client.db("biomedDB").collection("blogs");
-    const applidejobsCollection= client.db("biomedDB").collection("appliedjobs");
+    const applidejobsCollection = client
+      .db("biomedDB")
+      .collection("appliedjobs");
+    const testimonialsCollection = client
+      .db("biomedDB")
+      .collection("testimonials");
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -98,12 +103,26 @@ async function run() {
     });
 
     // getting single blog
-    app.get('/blogs/:id', async (req, res)=>{
+    app.get("/blogs/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await blogsCollection.findOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
+
+    // getting testimonials data
+    app.get("/testimonials", async (req, res) => {
+      const result = await testimonialsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // posting feedback
+    app.post("/postFeedback", async (req, res) => {
+      const body = req.body;
+      const result = await testimonialsCollection.insertOne(body);
+      res.send(result);
+      console.log(result);
+    });
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
