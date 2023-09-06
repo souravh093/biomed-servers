@@ -162,11 +162,15 @@ async function run() {
       console.log(result);
     });
 
-      // getting testimonials data
-      app.get("/testimonials", async (req, res) => {
-        const result = await testimonialsCollection.find().toArray();
-        res.send(result);
-      });
+    // getting testimonials data
+    app.get("/testimonials", async (req, res) => {
+      const result = await testimonialsCollection
+        .find()
+        .sort({ _id: -1 })
+        .limit(7)
+        .toArray();
+      res.send(result);
+    });
 
     // store apply job
     app.post("/appliedjob", async (req, res) => {
