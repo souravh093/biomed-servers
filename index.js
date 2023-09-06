@@ -32,6 +32,12 @@ async function run() {
     const applidejobsCollection = client
       .db("biomedDB")
       .collection("appliedjobs");
+    const testimonialsCollection = client
+      .db("biomedDB")
+      .collection("testimonials");
+    const SocialMediaCollection = client
+      .db("biomedDB")
+      .collection("social-media");
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -96,13 +102,122 @@ async function run() {
       res.send(result);
     });
 
-
     // get single jobn
     app.get("/job/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
 
       const result = await jobsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // post a blog
+    app.post("/blogs", async (req, res) => {
+      const blog = req.body;
+      const result = await blogsCollection.insertOne(blog);
+      res.send(result);
+    });
+    // getting all blogs
+    app.get("/blogs", async (req, res) => {
+      const result = await blogsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // getting single blog
+    app.get("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // posting testimonials feedback
+    app.post("/postFeedback", async (req, res) => {
+      const body = req.body;
+      const result = await testimonialsCollection.insertOne(body);
+      res.send(result);
+      console.log(result);
+    });
+
+    // getting testimonials data
+    app.get("/testimonials", async (req, res) => {
+      const result = await testimonialsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // store apply job
+    app.post("/appliedjob", async (req, res) => {
+      const appliedjobdata = req.body;
+
+      const result = await applidejobsCollection.insertOne({ appliedjobdata });
+      res.send(result);
+    });
+
+    // admin dashboard
+    // get all client
+    app.get("/clients", async (req, res) => {
+      try {
+        const query = { client: true };
+        const result = await usersCollection.find(query).toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching client users:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.get("/moderators", async (req, res) => {
+      try {
+        const query = { moderator: true };
+        const result = await usersCollection.find(query).toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching moderator users:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.get("/allusers", async (req, res) => {
+      const allUsers = await usersCollection.find().toArray();
+
+      const filterUsers = allUsers.filter(
+        (user) => !(user.client || user.moderator || user.admin)
+      );
+      res.send(filterUsers);
+    });
+
+    // social media'
+    app.get("/social-media", async (req, res) => {
+      const result = await SocialMediaCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/social-media/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      const result = await SocialMediaCollection.findOne(query);
+      res.send(result);
+    });
+    app.put("/social-media/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedSocialMedia = req.body;
+      const SocialMedia = {
+        $set: {
+          facebook: updatedSocialMedia.facebook,
+          linkedin: updatedSocialMedia.linkedin,
+          instagram: updatedSocialMedia.instagram,
+          twitter: updatedSocialMedia.twitter,
+        },
+      };
+      const result = await SocialMediaCollection.updateOne(
+        filter,
+        SocialMedia,
+        options
+      );
       res.send(result);
     });
 
