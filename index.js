@@ -31,7 +31,9 @@ async function run() {
     const applidejobsCollection = client
       .db("biomedDB")
       .collection("appliedjobs");
-
+    const testimonialsCollection = client
+      .db("biomedDB")
+      .collection("testimonials");
     const SocialMediaCollection = client
       .db("biomedDB")
       .collection("social-media");
@@ -151,6 +153,20 @@ async function run() {
       const result = await blogsCollection.findOne(query);
       res.send(result);
     });
+
+    // posting testimonials feedback
+    app.post("/postFeedback", async (req, res) => {
+      const body = req.body;
+      const result = await testimonialsCollection.insertOne(body);
+      res.send(result);
+      console.log(result);
+    });
+
+      // getting testimonials data
+      app.get("/testimonials", async (req, res) => {
+        const result = await testimonialsCollection.find().toArray();
+        res.send(result);
+      });
 
     // store apply job
     app.post("/appliedjob", async (req, res) => {
