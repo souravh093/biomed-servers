@@ -1,9 +1,7 @@
-//external imports
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-
 require("dotenv").config();
 
 const port = process.env.PORT || 5000;
@@ -29,12 +27,14 @@ async function run() {
 
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
+    const blogsCollection = client.db("biomedDB").collection("blogs");
     const applidejobsCollection = client
       .db("biomedDB")
       .collection("appliedjobs");
     const testimonialsCollection = client
       .db("biomedDB")
       .collection("testimonials");
+    const postsCollection = client.db("biomedDB").collection("posts");
     const SocialMediaCollection = client
       .db("biomedDB")
       .collection("social-media");
@@ -58,39 +58,12 @@ async function run() {
       res.send(result);
     });
 
-
-
     // get role
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
       res.send(result);
-    });
-
-    // update task when apply this task
-    app.put("/jobs/:id/apply", async (req, res) => {
-      const taskId = req.params.id;
-
-      try {
-        const job = await jobsCollection.findOne({ _id: new ObjectId(taskId) });
-
-        if (!job) {
-          return res.status(404).json({ error: "Task not found" });
-        }
-
-        const appliedCount = (job.appliedCount || 0) + 1;
-
-        const result = await jobsCollection.updateOne(
-          { _id: new ObjectId(taskId) },
-          { $set: { appliedCount } }
-        );
-
-        res.send(result);
-      } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Internal server error" });
-      }
     });
 
     // get all users
@@ -106,6 +79,14 @@ async function run() {
       res.send(result);
     });
 
+    // get single job
+    app.get("/jobs/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // get all jobs
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().toArray();
@@ -113,61 +94,21 @@ async function run() {
     });
 
     // get all applidejobs
-    app.get("/applidejobs", async (req, res) => {
-      const result = await applidejobsCollection.find().toArray();
-      res.send(result);
-    });
-
-    //get all allApplyJob by user email
-    app.get("/allApplyJob", async (req, res) => {
-      let query = {};
-      if (req.query.email) {
-        query = { "appliedjobdata.email": req.query.email };
-      }
+    app.get("/applidejobs/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { "appliedjobdata.email": email };
       const result = await applidejobsCollection.find(query).toArray();
-
-      res.send(result);
-    });
-
-    app.put("/appliedjob/:id", async (req, res) => {
-      const id = req.params.id;
-      const updateData = req.body;
-      const query = { _id: new ObjectId(id) };
-      const option = { upsert: true };
-      const updateDoc = {
-        $set: updateData,
-      };
-
-      const result = await applidejobsCollection.updateOne(
-        query,
-        updateDoc,
-        option
-      );
-
       res.send(result);
     });
 
     // get single job
-    app.get("/job/:id", async (req, res) => {
+    app.get("/singlejob/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
 
       const result = await jobsCollection.findOne(query);
       res.send(result);
     });
-
-    // get single task by category
-
-    app.get("/categoryJobs", async (req, res) => {
-      let query = {};
-      if (req.query.industry) {
-        query = { industry: req.query.industry };
-      }
-      const result = await jobsCollection.find(query).toArray();
-      res.send(result);
-    });
-
-
 
     // post a blog
     app.post("/blogs", async (req, res) => {
@@ -197,13 +138,27 @@ async function run() {
       console.log(result);
     });
 
-    // getting testimonials data
-    app.get("/testimonials", async (req, res) => {
+     // getting testimonials data
+     app.get("/testimonials", async (req, res) => {
       const result = await testimonialsCollection
         .find()
         .sort({ _id: -1 })
         .limit(7)
         .toArray();
+      res.send(result);
+    });
+
+    // posting share post
+    app.post("/posts", async (req, res) => {
+      const body = req.body;
+      const result = await postsCollection.insertOne(body);
+      res.send(result);
+      console.log(result);
+    });
+
+    // getting post data
+    app.get("/posts", async (req, res) => {
+      const result = await postsCollection.find().toArray();
       res.send(result);
     });
 
@@ -296,7 +251,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.json("biomed server is on");
+  res.send("biomed server is on");
 });
 
 app.listen(port, () => {
