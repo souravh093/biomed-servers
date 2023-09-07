@@ -58,7 +58,7 @@ async function run() {
       res.send(result);
     });
 
- 
+
 
     // get role
     app.get("/users/:email", async (req, res) => {
@@ -155,6 +155,19 @@ async function run() {
       const result = await jobsCollection.findOne(query);
       res.send(result);
     });
+
+    // get single task by category
+
+    app.get("/categoryJobs", async (req, res) => {
+      let query = {};
+      if (req.query.industry) {
+        query = { industry: req.query.industry };
+      }
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+
 
     // post a blog
     app.post("/blogs", async (req, res) => {
