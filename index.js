@@ -28,7 +28,7 @@ async function run() {
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
     const blogsCollection = client.db("biomedDB").collection("blogs");
-    const applidejobsCollection= client.db("biomedDB").collection("appliedjobs");
+    const applidejobsCollection = client.db("biomedDB").collection("appliedjobs");
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -91,6 +91,19 @@ async function run() {
       res.send(result);
     });
 
+    // get single task by category
+
+    app.get("/categoryJobs", async (req, res) => {
+      let query = {};
+      if (req.query.industry) {
+        query = { industry: req.query.industry };
+      }
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+
+
     // getting all blogs
     app.get("/blogs", async (req, res) => {
       const result = await blogsCollection.find().toArray();
@@ -98,9 +111,9 @@ async function run() {
     });
 
     // getting single blog
-    app.get('/blogs/:id', async (req, res)=>{
+    app.get('/blogs/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await blogsCollection.findOne(query);
       res.send(result)
     })
