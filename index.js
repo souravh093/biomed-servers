@@ -58,8 +58,6 @@ async function run() {
       res.send(result);
     });
 
- 
-
     // get role
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
@@ -124,18 +122,27 @@ async function run() {
       if (req.query.email) {
         query = { "appliedjobdata.email": req.query.email };
       }
-      const result = await applidejobsCollection.find(query).toArray();
-
+      const result = await applidejobsCollection
+        .find(query)
+        .sort({ _id: -1 })
+        .toArray();
       res.send(result);
     });
 
     app.put("/appliedjob/:id", async (req, res) => {
       const id = req.params.id;
       const updateData = req.body;
+
+      console.log(updateData.isApplyed);
+
       const query = { _id: new ObjectId(id) };
       const option = { upsert: true };
       const updateDoc = {
-        $set: updateData,
+        $set: {
+          "appliedjobdata.isApplied": updateData.isApplied,
+          "appliedjobdata.coverLetter": updateData.coverLetter,
+          "appliedjobdata.downloadPdf:": updateData.downloadPdf,
+        },
       };
 
       const result = await applidejobsCollection.updateOne(
