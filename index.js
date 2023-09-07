@@ -29,6 +29,7 @@ async function run() {
 
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
+    const evaluateCollection = client.db("biomedDB").collection("evaluate");
     const applidejobsCollection = client
       .db("biomedDB")
       .collection("appliedjobs");
@@ -57,8 +58,6 @@ async function run() {
       );
       res.send(result);
     });
-
- 
 
     // get role
     app.get("/users/:email", async (req, res) => {
@@ -129,6 +128,21 @@ async function run() {
       res.send(result);
     });
 
+    // store apply job
+    app.post("/appliedjob", async (req, res) => {
+      const appliedjobdata = req.body;
+
+      const result = await applidejobsCollection.insertOne({ appliedjobdata });
+      res.send(result);
+    });
+
+    app.post("/evaluateTask", async (req, res) => {
+      const evaluateData = req.body;
+      const result = await evaluateCollection.insertOne(evaluateData);
+      res.send(result);
+    });
+
+    // update applied job
     app.put("/appliedjob/:id", async (req, res) => {
       const id = req.params.id;
       const updateData = req.body;
@@ -144,6 +158,13 @@ async function run() {
         option
       );
 
+      res.send(result);
+    });
+
+    app.get("/applyTaskInstructor/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { "appliedjobdata.taskId": id };
+      const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -191,14 +212,6 @@ async function run() {
         .sort({ _id: -1 })
         .limit(7)
         .toArray();
-      res.send(result);
-    });
-
-    // store apply job
-    app.post("/appliedjob", async (req, res) => {
-      const appliedjobdata = req.body;
-
-      const result = await applidejobsCollection.insertOne({ appliedjobdata });
       res.send(result);
     });
 
