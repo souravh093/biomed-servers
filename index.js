@@ -48,6 +48,8 @@ async function run() {
     const blogsCollection = client.db("biomedDB").collection("blogs");
     const applidejobsCollection= client.db("biomedDB").collection("appliedjobs");
     const SocialMediaCollection = client.db("biomedDB").collection("social-media");
+    const applicantsCollection = client.db("biomedDB").collection("applicants");
+
 
     app.post('/jwt', (req, res) => {
       const user = req.body;
@@ -174,6 +176,13 @@ async function run() {
       const result = await SocialMediaCollection.updateOne(filter,SocialMedia,options);
       res.send(result);
   })
+
+  // applicants
+  app.get("/applicants", async (req, res) => {
+    const result = await applicantsCollection.find().toArray();
+    res.send(result);
+  });
+
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
