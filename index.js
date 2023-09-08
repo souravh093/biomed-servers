@@ -133,8 +133,6 @@ async function run() {
       const id = req.params.id;
       const updateData = req.body;
 
-      console.log(updateData.isApplyed);
-
       const query = { _id: new ObjectId(id) };
       const option = { upsert: true };
       const updateDoc = {
@@ -274,6 +272,17 @@ async function run() {
         SocialMedia,
         options
       );
+      res.send(result);
+    });
+
+    // delete Taskhnistory route
+
+    app.delete("/taskdelete/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+
+      const result = await applidejobsCollection.deleteOne(query);
       res.send(result);
     });
 
