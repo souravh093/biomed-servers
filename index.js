@@ -276,26 +276,8 @@ async function run() {
 
     app.get("/applyTaskInstructor/:id", async (req, res) => {
       const id = req.params.id;
-      const updateData = req.body;
-
-      console.log(updateData.isApplyed);
-
-      const query = { _id: new ObjectId(id) };
-      const option = { upsert: true };
-      const updateDoc = {
-        $set: {
-          "appliedjobdata.isApplied": updateData.isApplied,
-          "appliedjobdata.coverLetter": updateData.coverLetter,
-          "appliedjobdata.downloadPdf:": updateData.downloadPdf,
-        },
-      };
-
-      const result = await applidejobsCollection.updateOne(
-        query,
-        updateDoc,
-        option
-      );
-
+      const query = { "appliedjobdata.taskId": id };
+      const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
     });
 
