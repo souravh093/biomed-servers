@@ -117,16 +117,16 @@ async function run() {
       res.send(result);
     });
 
-    //get all allApplyJob by user email
-    app.get("/allApplyJob", async (req, res) => {
-      let query = {};
-      if (req.query.email) {
-        query = { "appliedjobdata.email": req.query.email };
-      }
-      const result = await applidejobsCollection.find(query).toArray();
+    // //get all allApplyJob by user email
+    // app.get("/allApplyJob", async (req, res) => {
+    //   let query = {};
+    //   if (req.query.email) {
+    //     query = { "appliedjobdata.email": req.query.email };
+    //   }
+    //   const result = await applidejobsCollection.find(query).toArray();
 
-      res.send(result);
-    });
+    //   res.send(result);
+    // });
 
     // store apply job
     app.post("/appliedjob", async (req, res) => {
@@ -142,24 +142,102 @@ async function run() {
       res.send(result);
     });
 
-    // update applied job
-    app.put("/appliedjob/:id", async (req, res) => {
-      const id = req.params.id;
-      const updateData = req.body;
-      const query = { _id: new ObjectId(id) };
-      const option = { upsert: true };
-      const updateDoc = {
-        $set: updateData,
-      };
-
-      const result = await applidejobsCollection.updateOne(
-        query,
-        updateDoc,
-        option
-      );
-
+    //get all allApplyJob by user email
+    app.get("/allApplyJob", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        query = { "appliedjobdata.email": req.query.email };
+      }
+      const result = await applidejobsCollection
+        .find(query)
+        .sort({ _id: -1 })
+        .toArray();
       res.send(result);
     });
+
+    // Upload and applied and submit job
+
+    app.put("/appliedjob/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const updateData = req.body;
+
+        // Ensure you have a valid ObjectId for the query
+        const query = { _id: new ObjectId(id) };
+
+        const options = { upsert: true };
+
+        const updateFields = {};
+
+        if (updateData.hasOwnProperty("isApplied")) {
+          updateFields["appliedjobdata.isApplied"] = updateData.isApplied;
+        }
+        if (updateData.hasOwnProperty("coverLetter")) {
+          updateFields["appliedjobdata.coverLetter"] = updateData.coverLetter;
+        }
+        if (updateData.hasOwnProperty("downloadPdf")) {
+          updateFields["appliedjobdata.downloadPdf"] = updateData.downloadPdf;
+        }
+        if (updateData.hasOwnProperty("downloadEvaluate")) {
+          updateFields["appliedjobdata.downloadEvaluate"] =
+            updateData.downloadEvaluate;
+        }
+        if (updateData.hasOwnProperty("feedback")) {
+          updateFields["appliedjobdata.feedback"] = updateData.feedback;
+        }
+        if (updateData.hasOwnProperty("point")) {
+          updateFields["appliedjobdata.point"] = updateData.point;
+        }
+        if (updateData.hasOwnProperty("isEvaluate")) {
+          updateFields["appliedjobdata.isEvaluate"] = updateData.isEvaluate;
+        }
+
+        const updateDoc = {
+          $set: updateFields,
+        };
+
+        const result = await applidejobsCollection.updateOne(
+          query,
+          updateDoc,
+          options
+        );
+
+        if (result.modifiedCount === 1) {
+          res.status(200).json({ message: "Data updated successfully" });
+        } else {
+          res.status(404).json({ message: "Job not found" });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+    });
+
+    // TODO only particular instructor data show his dashboard
+    app.get("/evaluateTasks", async (req, res) => {
+      const query = { "appliedjobdata.isEvaluate": true };
+      const result = await applidejobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // update applied job
+    // app.put("/appliedjob/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const updateData = req.body;
+    //   const query = { _id: new ObjectId(id) };
+    //   const option = { upsert: true };
+    //   const updateDoc = {
+    //     $set: updateData,
+    //   };
+
+    //   const result = await applidejobsCollection.updateOne(
+    //     query,
+    //     updateDoc,
+    //     option
+    //   );
+
+    //   res.send(result);
+    // });
 
     app.get("/applyTaskInstructor/:id", async (req, res) => {
       const id = req.params.id;
