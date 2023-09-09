@@ -138,8 +138,8 @@ async function run() {
       console.log(result);
     });
 
-     // getting testimonials data
-     app.get("/testimonials", async (req, res) => {
+    // getting testimonials data
+    app.get("/testimonials", async (req, res) => {
       const result = await testimonialsCollection
         .find()
         .sort({ _id: -1 })
@@ -156,9 +156,17 @@ async function run() {
       console.log(result);
     });
 
-    // getting post data
+    // getting all post data
     app.get("/posts", async (req, res) => {
       const result = await postsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // getting single post data
+    app.get("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await postsCollection.findOne(query);
       res.send(result);
     });
 
