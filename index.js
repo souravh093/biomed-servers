@@ -46,19 +46,28 @@ async function run() {
     // await client.connect();
 
     const usersCollection = client.db("biomedDB").collection("users");
+
     const jobsCollection = client.db("biomedDB").collection("jobs");
+
     const evaluateCollection = client.db("biomedDB").collection("evaluate");
+
     const applidejobsCollection = client
       .db("biomedDB")
       .collection("appliedjobs");
+
     const blogsCollection = client.db("biomedDB").collection("blogs");
+
     const SocialMediaCollection = client
       .db("biomedDB")
       .collection("social-media");
+
     const applicantsCollection = client.db("biomedDB").collection("applicants");
+
     const testimonialsCollection = client
       .db("biomedDB")
       .collection("testimonials");
+
+    const bookMarkJob = client.db("biomedDB").collection("bookMarkJob");
 
     // app.post('/jwt', (req, res) => {
     //   const user = req.body;
@@ -307,6 +316,31 @@ async function run() {
       const query = { _id: new ObjectId(id) };
 
       const result = await jobsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // get all bookmar job by use email
+    app.get("/bookmark", async (req, res) => {
+      const email = req.query.email;
+
+      const query = { BookMarkUserEmail: email };
+      const result = await bookMarkJob.find(query).sort({ _id: -1 }).toArray();
+      res.send(result);
+    });
+
+    // bookMark jbos by user
+    app.post("/bookmark", async (req, res) => {
+      const data = req.body;
+      const result = await bookMarkJob.insertOne(data);
+      res.send(result);
+    });
+
+    // delete bookMark jbos by user
+    app.delete("/bookmark/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { "task._id": id };
+
+      const result = await bookMarkJob.deleteOne(query);
       res.send(result);
     });
 
