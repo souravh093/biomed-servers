@@ -330,6 +330,16 @@ async function run() {
       res.send(result);
     });
 
+    // latest blog
+    app.get("/blogslatest", async (req, res) => {
+      const result = await blogsCollection
+        .find()
+        .sort({ _id: -1 })
+        .limit(5)
+        .toArray();
+      res.send(result);
+    });
+
     // posting testimonials feedback
     app.post("/postFeedback", async (req, res) => {
       const body = req.body;
