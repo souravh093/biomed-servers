@@ -418,6 +418,7 @@ async function run() {
       }
     });
 
+    // get all users
     app.get("/allusers", async (req, res) => {
       const allUsers = await usersCollection.find().toArray();
 
@@ -425,6 +426,17 @@ async function run() {
         (user) => !(user.client || user.moderator || user.admin)
       );
       res.send(filterUsers);
+    });
+
+    // delete all users
+
+    app.delete("/allusers/:email", async (req, res) => {
+      const email = req.params.email;
+
+      const query = { email: email };
+
+      const deleteUser = await usersCollection.deleteOne(query);
+      res.send(deleteUser);
     });
 
     // social media'
