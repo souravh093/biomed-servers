@@ -163,6 +163,20 @@ async function run() {
       res.send(result);
     });
 
+
+    app.get("/categoryJobs", async (req, res) => {
+      let query = {};
+      if (req.query.industry) {
+        query = { industry: req.query.industry };
+      }
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+
+
+
     // get all applidejobs
     app.get("/applidejobs", async (req, res) => {
       const result = await applidejobsCollection.find().toArray();
