@@ -68,6 +68,7 @@ async function run() {
       .collection("testimonials");
 
     const bookMarkJob = client.db("biomedDB").collection("bookMarkJob");
+    const aboutCollection = client.db("biomedDB").collection("about");
 
     // app.post('/jwt', (req, res) => {
     //   const user = req.body;
@@ -163,7 +164,6 @@ async function run() {
       res.send(result);
     });
 
-
     app.get("/categoryJobs", async (req, res) => {
       let query = {};
       if (req.query.industry) {
@@ -171,11 +171,7 @@ async function run() {
       }
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
-    })
-
-
-
-
+    });
 
     // get all applidejobs
     app.get("/applidejobs", async (req, res) => {
@@ -486,7 +482,7 @@ async function run() {
       res.send(result);
     });
 
-    // delete Taskhnistory route
+    // delete Task history route
 
     app.delete("/taskdelete/:id", async (req, res) => {
       const id = req.params.id;
@@ -499,6 +495,23 @@ async function run() {
     // applicants
     app.get("/applicants", async (req, res) => {
       const result = await applicantsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // About details route
+    app.put("/aboutDetails/:email", async (req, res) => {
+      const email = req.params.email;
+      const data = req.body;
+      const query = { email: email };
+      const options = { upsert: true };
+      const updateAbout = {
+        $set: data,
+      };
+      const result = await aboutCollection.updateOne(
+        query,
+        updateAbout,
+        options
+      );
       res.send(result);
     });
 
