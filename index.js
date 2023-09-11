@@ -46,19 +46,28 @@ async function run() {
     // await client.connect();
 
     const usersCollection = client.db("biomedDB").collection("users");
+
     const jobsCollection = client.db("biomedDB").collection("jobs");
+
     const evaluateCollection = client.db("biomedDB").collection("evaluate");
+
     const applidejobsCollection = client
       .db("biomedDB")
       .collection("appliedjobs");
+
     const blogsCollection = client.db("biomedDB").collection("blogs");
+
     const SocialMediaCollection = client
       .db("biomedDB")
       .collection("social-media");
+
     const applicantsCollection = client.db("biomedDB").collection("applicants");
+
     const testimonialsCollection = client
       .db("biomedDB")
       .collection("testimonials");
+
+    const bookMarkJob = client.db("biomedDB").collection("bookMarkJob");
 
     // app.post('/jwt', (req, res) => {
     //   const user = req.body;
@@ -153,6 +162,20 @@ async function run() {
       const result = await jobsCollection.find().toArray();
       res.send(result);
     });
+
+
+    app.get("/categoryJobs", async (req, res) => {
+      let query = {};
+      if (req.query.industry) {
+        query = { industry: req.query.industry };
+      }
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+
+
 
     // get all applidejobs
     app.get("/applidejobs", async (req, res) => {
@@ -310,6 +333,31 @@ async function run() {
       res.send(result);
     });
 
+    // get all bookmar job by use email
+    app.get("/bookmark", async (req, res) => {
+      const email = req.query.email;
+
+      const query = { BookMarkUserEmail: email };
+      const result = await bookMarkJob.find(query).sort({ _id: -1 }).toArray();
+      res.send(result);
+    });
+
+    // bookMark jbos by user
+    app.post("/bookmark", async (req, res) => {
+      const data = req.body;
+      const result = await bookMarkJob.insertOne(data);
+      res.send(result);
+    });
+
+    // delete bookMark jbos by user
+    app.delete("/bookmark/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { "task._id": id };
+
+      const result = await bookMarkJob.deleteOne(query);
+      res.send(result);
+    });
+
     // post a blog
     app.post("/blogs", async (req, res) => {
       const blog = req.body;
@@ -327,6 +375,16 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await blogsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // latest blog
+    app.get("/blogslatest", async (req, res) => {
+      const result = await blogsCollection
+        .find()
+        .sort({ _id: -1 })
+        .limit(5)
+        .toArray();
       res.send(result);
     });
 
@@ -374,6 +432,7 @@ async function run() {
       }
     });
 
+    // get all users
     app.get("/allusers", async (req, res) => {
       const allUsers = await usersCollection.find().toArray();
 
@@ -381,6 +440,17 @@ async function run() {
         (user) => !(user.client || user.moderator || user.admin)
       );
       res.send(filterUsers);
+    });
+
+    // delete all users
+
+    app.delete("/allusers/:email", async (req, res) => {
+      const email = req.params.email;
+
+      const query = { email: email };
+
+      const deleteUser = await usersCollection.deleteOne(query);
+      res.send(deleteUser);
     });
 
     // social media'
