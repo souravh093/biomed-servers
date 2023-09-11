@@ -51,6 +51,9 @@ async function run() {
     const applidejobsCollection= client.db("biomedDB").collection("appliedjobs");
     const SocialMediaCollection = client.db("biomedDB").collection("social-media");
     const applicantsCollection = client.db("biomedDB").collection("applicants");
+    const TrendingTasksDataCollection = client.db("biomedDB").collection("TrendingTasksData");
+    const categorysDataCollection = client.db("biomedDB").collection("categorysData");
+    const recentJobDataCollection = client.db("biomedDB").collection("recentJobData");
     const testimonialsCollection = client
     .db("biomedDB")
     .collection("testimonials");
@@ -316,7 +319,23 @@ async function run() {
     res.send(result);
   });
 
+  //TrendingTasksData
+  app.get("/trendingTasksData", async (req, res) => {
+    const result = await TrendingTasksDataCollection.find().toArray();
+    res.send(result);
+  });
 
+  // categorysData
+  app.get("/categorysData", async (req, res) => {
+    const result = await categorysDataCollection.find().toArray();
+    res.send(result);
+  });
+
+  // recentJobData
+  app.get("/recentJobData", async (req, res) => {
+    const result = await recentJobDataCollection.find().toArray();
+    res.send(result);
+  });
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log(
