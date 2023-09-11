@@ -59,18 +59,13 @@ async function run() {
       .collection("testimonials");
     const postsCollection = client.db("biomedDB").collection("posts");
     const aboutCollection = client.db("biomedDB").collection("about");
-    
-
-<<<<<<< HEAD
     const bookMarkJob = client.db("biomedDB").collection("bookMarkJob");
-    const aboutCollection = client.db("biomedDB").collection("about");
-=======
+
     app.post('/jwt', (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
       res.send({ token })
     })
->>>>>>> 4159aa1387492417e11fcfaf432dfa7999b67520
 
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
@@ -153,7 +148,6 @@ async function run() {
       res.send(result);
     });
 
-<<<<<<< HEAD
     app.get("/categoryJobs", async (req, res) => {
       let query = {};
       if (req.query.industry) {
@@ -163,8 +157,6 @@ async function run() {
       res.send(result);
     });
 
-=======
->>>>>>> 4159aa1387492417e11fcfaf432dfa7999b67520
     // get all applidejobs
     app.get("/applidejobs", async (req, res) => {
       const result = await applidejobsCollection.find().toArray();
