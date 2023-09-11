@@ -59,11 +59,16 @@ async function run() {
     .collection("testimonials");
     
 
+<<<<<<< HEAD
+    const bookMarkJob = client.db("biomedDB").collection("bookMarkJob");
+    const aboutCollection = client.db("biomedDB").collection("about");
+=======
     app.post('/jwt', (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
       res.send({ token })
     })
+>>>>>>> 4159aa1387492417e11fcfaf432dfa7999b67520
 
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
@@ -146,6 +151,18 @@ async function run() {
       res.send(result);
     });
 
+<<<<<<< HEAD
+    app.get("/categoryJobs", async (req, res) => {
+      let query = {};
+      if (req.query.industry) {
+        query = { industry: req.query.industry };
+      }
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+=======
+>>>>>>> 4159aa1387492417e11fcfaf432dfa7999b67520
     // get all applidejobs
     app.get("/applidejobs", async (req, res) => {
       const result = await applidejobsCollection.find().toArray();
@@ -313,11 +330,15 @@ async function run() {
       res.send(result);
     });
 
+<<<<<<< HEAD
+    // delete Task history route
+=======
   // applicants
   app.get("/applicants", async (req, res) => {
     const result = await applicantsCollection.find().toArray();
     res.send(result);
   });
+>>>>>>> 4159aa1387492417e11fcfaf432dfa7999b67520
 
   //TrendingTasksData
   app.get("/trendingTasksData", async (req, res) => {
@@ -331,11 +352,31 @@ async function run() {
     res.send(result);
   });
 
+<<<<<<< HEAD
+    // About details route
+    app.put("/aboutDetails/:email", async (req, res) => {
+      const email = req.params.email;
+      const data = req.body;
+      const query = { email: email };
+      const options = { upsert: true };
+      const updateAbout = {
+        $set: data,
+      };
+      const result = await aboutCollection.updateOne(
+        query,
+        updateAbout,
+        options
+      );
+      res.send(result);
+    });
+
+=======
   // recentJobData
   app.get("/recentJobData", async (req, res) => {
     const result = await recentJobDataCollection.find().toArray();
     res.send(result);
   });
+>>>>>>> 4159aa1387492417e11fcfaf432dfa7999b67520
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log(
