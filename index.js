@@ -55,8 +55,10 @@ async function run() {
     const categorysDataCollection = client.db("biomedDB").collection("categorysData");
     const recentJobDataCollection = client.db("biomedDB").collection("recentJobData");
     const testimonialsCollection = client
-    .db("biomedDB")
-    .collection("testimonials");
+      .db("biomedDB")
+      .collection("testimonials");
+    const postsCollection = client.db("biomedDB").collection("posts");
+    const aboutCollection = client.db("biomedDB").collection("about");
     
 
 <<<<<<< HEAD
@@ -254,6 +256,53 @@ async function run() {
       res.send(result);
     });
 
+    // Community Features API's
+    // posting share post
+    app.post("/posts", async (req, res) => {
+      const body = req.body;
+      const result = await postsCollection.insertOne(body);
+      res.send(result);
+      console.log(result);
+    });
+
+    // getting all post data
+    app.get("/posts", async (req, res) => {
+      const result = await postsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // getting single post data
+    app.get("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await postsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // delete single post
+    app.delete("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await postsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // update single post
+    app.patch("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updatePost = {
+        $set: {
+          photo: body.photo,
+          title: body.title,
+          desc: body.desc,
+        },
+      };
+      const result = await postsCollection.updateOne(filter, updatePost);
+      res.send(result);
+    });
+
     // store apply job
     app.post("/appliedjob", async (req, res) => {
       const appliedjobdata = req.body;
@@ -302,6 +351,7 @@ async function run() {
       const result = await SocialMediaCollection.find().toArray();
       res.send(result);
     });
+
     app.get("/social-media/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -309,6 +359,7 @@ async function run() {
       const result = await SocialMediaCollection.findOne(query);
       res.send(result);
     });
+
     app.put("/social-media/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -329,16 +380,35 @@ async function run() {
       );
       res.send(result);
     });
+    // About details update API
+    app.put("/aboutDetails", async (req, res) => {
+      const data = req.body;
+      const query = {};
+      const options = { upsert: false };
+      const updateAbout = {
+        $set: data,
+      };
+      const result = await aboutCollection.updateOne(
+        query,
+        updateAbout,
+        options
+      );
+      res.send(result);
+    });
 
-<<<<<<< HEAD
+    // getting about us data
+    app.get("/aboutDetails", async (req, res) => {
+      const result = await aboutCollection.find().toArray();
+      res.send(result);
+    });
+
     // delete Task history route
-=======
   // applicants
   app.get("/applicants", async (req, res) => {
     const result = await applicantsCollection.find().toArray();
     res.send(result);
   });
->>>>>>> 4159aa1387492417e11fcfaf432dfa7999b67520
+
 
   //TrendingTasksData
   app.get("/trendingTasksData", async (req, res) => {
@@ -352,31 +422,11 @@ async function run() {
     res.send(result);
   });
 
-<<<<<<< HEAD
-    // About details route
-    app.put("/aboutDetails/:email", async (req, res) => {
-      const email = req.params.email;
-      const data = req.body;
-      const query = { email: email };
-      const options = { upsert: true };
-      const updateAbout = {
-        $set: data,
-      };
-      const result = await aboutCollection.updateOne(
-        query,
-        updateAbout,
-        options
-      );
-      res.send(result);
-    });
-
-=======
   // recentJobData
   app.get("/recentJobData", async (req, res) => {
     const result = await recentJobDataCollection.find().toArray();
     res.send(result);
   });
->>>>>>> 4159aa1387492417e11fcfaf432dfa7999b67520
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log(
