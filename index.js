@@ -38,6 +38,7 @@ async function run() {
     const SocialMediaCollection = client
       .db("biomedDB")
       .collection("social-media");
+    const aboutCollection = client.db("biomedDB").collection("about");
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -179,6 +180,22 @@ async function run() {
       res.send(result);
     });
 
+    // update single post
+    app.patch("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updatePost = {
+        $set: {
+          photo: body.photo,
+          title: body.title,
+          desc: body.desc,
+        },
+      };
+      const result = await postsCollection.updateOne(filter, updatePost);
+      res.send(result);
+    });
+
     // store apply job
     app.post("/appliedjob", async (req, res) => {
       const appliedjobdata = req.body;
@@ -227,6 +244,7 @@ async function run() {
       const result = await SocialMediaCollection.find().toArray();
       res.send(result);
     });
+
     app.get("/social-media/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -234,6 +252,7 @@ async function run() {
       const result = await SocialMediaCollection.findOne(query);
       res.send(result);
     });
+
     app.put("/social-media/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -252,6 +271,28 @@ async function run() {
         SocialMedia,
         options
       );
+      res.send(result);
+    });
+
+    // About details update API
+    app.put("/aboutDetails", async (req, res) => {
+      const data = req.body;
+      const query = {};
+      const options = { upsert: false };
+      const updateAbout = {
+        $set: data,
+      };
+      const result = await aboutCollection.updateOne(
+        query,
+        updateAbout,
+        options
+      );
+      res.send(result);
+    });
+
+    // getting about us data
+    app.get("/aboutDetails", async (req, res) => {
+      const result = await aboutCollection.find().toArray();
       res.send(result);
     });
 
