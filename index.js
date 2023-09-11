@@ -1,13 +1,33 @@
+//external imports
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+
 require("dotenv").config();
+const jwt = require('jsonwebtoken');
 
 const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+const verifyJWT = (req, res, next) => {
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res.status(401).send({ error: true, message: 'unauthorized access' });
+  }
+  // bearer token
+  const token = authorization.split(' ')[1];
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ error: true, message: 'unauthorized access' })
+    }
+    req.decoded = decoded;
+    next();
+  })
+}
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.2sex9a1.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -28,17 +48,34 @@ async function run() {
     const usersCollection = client.db("biomedDB").collection("users");
     const jobsCollection = client.db("biomedDB").collection("jobs");
     const blogsCollection = client.db("biomedDB").collection("blogs");
-    const applidejobsCollection = client
-      .db("biomedDB")
-      .collection("appliedjobs");
+    const applidejobsCollection= client.db("biomedDB").collection("appliedjobs");
+    const SocialMediaCollection = client.db("biomedDB").collection("social-media");
+    const applicantsCollection = client.db("biomedDB").collection("applicants");
+    const TrendingTasksDataCollection = client.db("biomedDB").collection("TrendingTasksData");
+    const categorysDataCollection = client.db("biomedDB").collection("categorysData");
+    const recentJobDataCollection = client.db("biomedDB").collection("recentJobData");
     const testimonialsCollection = client
       .db("biomedDB")
       .collection("testimonials");
     const postsCollection = client.db("biomedDB").collection("posts");
-    const SocialMediaCollection = client
-      .db("biomedDB")
-      .collection("social-media");
     const aboutCollection = client.db("biomedDB").collection("about");
+    
+
+    app.post('/jwt', (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+      res.send({ token })
+    })
+
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      if (user?.admin !== true && user?.moderator !== true) {
+          return res.status(403).send({ error: true, message: 'forbidden message' });
+      }
+      next();
+    }
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -67,6 +104,31 @@ async function run() {
       res.send(result);
     });
 
+    // update task when apply this task
+    app.put("/jobs/:id/apply", async (req, res) => {
+      const taskId = req.params.id;
+
+      try {
+        const job = await jobsCollection.findOne({ _id: new ObjectId(taskId) });
+
+        if (!job) {
+          return res.status(404).json({ error: "Task not found" });
+        }
+
+        const appliedCount = (job.appliedCount || 0) + 1;
+
+        const result = await jobsCollection.updateOne(
+          { _id: new ObjectId(taskId) },
+          { $set: { appliedCount } }
+        );
+
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+    });
+
     // get all users
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
@@ -80,14 +142,6 @@ async function run() {
       res.send(result);
     });
 
-    // get single job
-    app.get("/jobs/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const result = await jobsCollection.find(query).toArray();
-      res.send(result);
-    });
-
     // get all jobs
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().toArray();
@@ -95,15 +149,51 @@ async function run() {
     });
 
     // get all applidejobs
-    app.get("/applidejobs/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { "appliedjobdata.email": email };
-      const result = await applidejobsCollection.find(query).toArray();
+    app.get("/applidejobs", async (req, res) => {
+      const result = await applidejobsCollection.find().toArray();
+      res.send(result);
+    });
+
+    //get all allApplyJob by user email
+    app.get("/allApplyJob", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        query = { "appliedjobdata.email": req.query.email };
+      }
+      const result = await applidejobsCollection
+        .find(query)
+        .sort({ _id: -1 })
+        .toArray();
+      res.send(result);
+    });
+
+    app.put("/appliedjob/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateData = req.body;
+
+      console.log(updateData.isApplyed);
+
+      const query = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+      const updateDoc = {
+        $set: {
+          "appliedjobdata.isApplied": updateData.isApplied,
+          "appliedjobdata.coverLetter": updateData.coverLetter,
+          "appliedjobdata.downloadPdf:": updateData.downloadPdf,
+        },
+      };
+
+      const result = await applidejobsCollection.updateOne(
+        query,
+        updateDoc,
+        option
+      );
+
       res.send(result);
     });
 
     // get single job
-    app.get("/singlejob/:id", async (req, res) => {
+    app.get("/job/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
 
@@ -296,6 +386,29 @@ async function run() {
       res.send(result);
     });
 
+  // applicants
+  app.get("/applicants", async (req, res) => {
+    const result = await applicantsCollection.find().toArray();
+    res.send(result);
+  });
+
+  //TrendingTasksData
+  app.get("/trendingTasksData", async (req, res) => {
+    const result = await TrendingTasksDataCollection.find().toArray();
+    res.send(result);
+  });
+
+  // categorysData
+  app.get("/categorysData", async (req, res) => {
+    const result = await categorysDataCollection.find().toArray();
+    res.send(result);
+  });
+
+  // recentJobData
+  app.get("/recentJobData", async (req, res) => {
+    const result = await recentJobDataCollection.find().toArray();
+    res.send(result);
+  });
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log(
@@ -309,7 +422,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("biomed server is on");
+  res.json("biomed server is on");
 });
 
 app.listen(port, () => {
