@@ -5,7 +5,7 @@ const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 require("dotenv").config();
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 
 const port = process.env.PORT || 5000;
 
@@ -59,8 +59,8 @@ async function run() {
       .collection("testimonials");
     const postsCollection = client.db("biomedDB").collection("posts");
     const aboutCollection = client.db("biomedDB").collection("about");
+    const teamMembersCollection = client.db("biomedDB").collection("teamMembers");
     const bookMarkJob = client.db("biomedDB").collection("bookMarkJob");
-
     app.post('/jwt', (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
@@ -419,6 +419,23 @@ async function run() {
     const result = await recentJobDataCollection.find().toArray();
     res.send(result);
   });
+
+  // posting team member
+  app.post("/teamMembers", async (req, res) => {
+    const body = req.body;
+    const result = await teamMembersCollection.insertOne(body);
+    res.send(result);
+    console.log(result);
+  });
+
+  // getting all team members
+  app.get("/teamMembers", async (req, res) => {
+    const result = await teamMembersCollection.find().toArray();
+    res.send(result);
+  });
+
+
+
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log(
