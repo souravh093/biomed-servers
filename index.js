@@ -163,7 +163,6 @@ async function run() {
       res.send(result);
     });
 
-
     app.get("/categoryJobs", async (req, res) => {
       let query = {};
       if (req.query.industry) {
@@ -171,11 +170,7 @@ async function run() {
       }
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
-    })
-
-
-
-
+    });
 
     // get all applidejobs
     app.get("/applidejobs", async (req, res) => {
@@ -420,33 +415,20 @@ async function run() {
       }
     });
 
-    app.get("/moderators", async (req, res) => {
-      try {
-        const query = { moderator: true };
-        const result = await usersCollection.find(query).toArray();
-
-        res.send(result);
-      } catch (error) {
-        console.error("Error fetching moderator users:", error);
-        res.status(500).send("Internal Server Error");
-      }
-    });
-
     // get all users
     app.get("/allusers", async (req, res) => {
       const allUsers = await usersCollection.find().toArray();
 
       const filterUsers = allUsers.filter(
-        (user) => !(user.client || user.moderator || user.admin)
+        (user) => !(user.client || user.admin)
       );
       res.send(filterUsers);
     });
 
     // delete all users
 
-    app.delete("/allusers/:email", async (req, res) => {
-      const email = req.params.email;
-
+    app.delete("/user", async (req, res) => {
+      const email = req.query.email;
       const query = { email: email };
 
       const deleteUser = await usersCollection.deleteOne(query);
