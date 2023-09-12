@@ -270,25 +270,11 @@ async function run() {
 
     // Community Features API's
     // posting share post
-    // app.post("/posts", async (req, res) => {
-    //   const body = req.body;
-    //   const result = await postsCollection.insertOne(body);
-    //   res.send(result);
-    //   console.log(result);
-    // });
 
-    app.put("/communityPosts/:email", async (req, res) => {
-      const email = req.params.email;
+    app.post("/communityPosts", async (req, res) => {
       const postData = req.body;
-      const query = { email: email };
-      const options = { upsert: true };
-      const updateAbout = {
-        $set: postData,
-      };
-      const result = await postsCollection.updateOne(
-        query,
-        updateAbout,
-        options
+      const result = await postsCollection.insertOne(
+        postData
       );
       res.send(result);
     });
