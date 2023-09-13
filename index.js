@@ -74,7 +74,6 @@ async function run() {
     const postsCollection = client.db("biomedDB").collection("posts");
     const aboutCollection = client.db("biomedDB").collection("about");
 
-
     const teamMembersCollection = client
       .db("biomedDB")
       .collection("teamMembers");
@@ -252,6 +251,16 @@ async function run() {
       res.send(result);
     });
 
+    // latest blog
+    app.get("/blogslatest", async (req, res) => {
+      const result = await blogsCollection
+        .find()
+        .sort({ _id: -1 })
+        .limit(5)
+        .toArray();
+      res.send(result);
+    });
+
     // posting testimonials feedback
     app.post("/postFeedback", async (req, res) => {
       const body = req.body;
@@ -275,9 +284,7 @@ async function run() {
 
     app.post("/communityPosts", async (req, res) => {
       const postData = req.body;
-      const result = await postsCollection.insertOne(
-        postData
-      );
+      const result = await postsCollection.insertOne(postData);
       res.send(result);
     });
 
@@ -318,7 +325,6 @@ async function run() {
       const result = await postsCollection.updateOne(filter, updatePost);
       res.send(result);
     });
-    
 
     // store apply job
     app.post("/appliedjob", async (req, res) => {
@@ -426,9 +432,22 @@ async function run() {
       res.send(result);
     });
 
-    //TrendingTasksData
-    app.get("/trendingTasksData", async (req, res) => {
-      const result = await TrendingTasksDataCollection.find().toArray();
+    // Treading Task
+    app.get("/trendingtask", async (req, res) => {
+      const result = await jobsCollection
+        .find()
+        .sort({ appliedCount: -1 })
+        .limit(7)
+        .toArray();
+      res.send(result);
+    });
+
+    app.get("/recenttask", async (req, res) => {
+      const result = await jobsCollection
+        .find()
+        .sort({ _id: -1 })
+        .limit(8)
+        .toArray();
       res.send(result);
     });
 
