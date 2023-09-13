@@ -437,6 +437,24 @@ async function run() {
       const result = await recentJobDataCollection.find().toArray();
       res.send(result);
     });
+
+    // post collection insert
+    app.put("/communityPosts/:email", async (req, res) => {
+      const email = req.params.email;
+      const postData = req.body;
+      const query = { email: email };
+      const options = { upsert: true };
+      const updatePost = {
+        $set: postData,
+      };
+
+      const result = await postsCollection.updateOne(
+        query,
+        updatePost,
+        options
+      );
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log(
