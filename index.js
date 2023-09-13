@@ -5,7 +5,7 @@ const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 require("dotenv").config();
-// const jwt = require('jsonwebtoken');
+// const jwt = require("jsonwebtoken");
 
 const port = process.env.PORT || 5000;
 
@@ -15,19 +15,23 @@ app.use(express.json());
 // const verifyJWT = (req, res, next) => {
 //   const authorization = req.headers.authorization;
 //   if (!authorization) {
-//     return res.status(401).send({ error: true, message: 'unauthorized access' });
+//     return res
+//       .status(401)
+//       .send({ error: true, message: "unauthorized access" });
 //   }
 //   // bearer token
-//   const token = authorization.split(' ')[1];
+//   const token = authorization.split(" ")[1];
 
 //   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
 //     if (err) {
-//       return res.status(401).send({ error: true, message: 'unauthorized access' })
+//       return res
+//         .status(401)
+//         .send({ error: true, message: "unauthorized access" });
 //     }
 //     req.decoded = decoded;
 //     next();
-//   })
-// }
+//   });
+// };
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.2sex9a1.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -46,44 +50,54 @@ async function run() {
     // await client.connect();
 
     const usersCollection = client.db("biomedDB").collection("users");
-
     const jobsCollection = client.db("biomedDB").collection("jobs");
-
-    const evaluateCollection = client.db("biomedDB").collection("evaluate");
-
+    const blogsCollection = client.db("biomedDB").collection("blogs");
     const applidejobsCollection = client
       .db("biomedDB")
       .collection("appliedjobs");
-
-    const blogsCollection = client.db("biomedDB").collection("blogs");
-
     const SocialMediaCollection = client
       .db("biomedDB")
       .collection("social-media");
-
     const applicantsCollection = client.db("biomedDB").collection("applicants");
-
+    const TrendingTasksDataCollection = client
+      .db("biomedDB")
+      .collection("TrendingTasksData");
+    const categorysDataCollection = client
+      .db("biomedDB")
+      .collection("categorysData");
+    const recentJobDataCollection = client
+      .db("biomedDB")
+      .collection("recentJobData");
     const testimonialsCollection = client
       .db("biomedDB")
       .collection("testimonials");
+    const postsCollection = client.db("biomedDB").collection("posts");
+    const aboutCollection = client.db("biomedDB").collection("about");
 
+
+    const teamMembersCollection = client
+      .db("biomedDB")
+      .collection("teamMembers");
     const bookMarkJob = client.db("biomedDB").collection("bookMarkJob");
-
-    // app.post('/jwt', (req, res) => {
-    //   const user = req.body;
-    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-    //   res.send({ token })
-    // })
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+      res.send({ token });
+    });
 
     // const verifyAdmin = async (req, res, next) => {
     //   const email = req.decoded.email;
-    //   const query = { email: email }
+    //   const query = { email: email };
     //   const user = await usersCollection.findOne(query);
     //   if (user?.admin !== true && user?.moderator !== true) {
-    //       return res.status(403).send({ error: true, message: 'forbidden message' });
+    //     return res
+    //       .status(403)
+    //       .send({ error: true, message: "forbidden message" });
     //   }
     //   next();
-    // }
+    // };
 
     // save user in database with email and role
     app.put("/users/:email", async (req, res) => {
@@ -109,13 +123,6 @@ async function run() {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
-      res.send(result);
-    });
-
-    app.get("/jobs/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const result = await jobsCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -178,20 +185,6 @@ async function run() {
       res.send(result);
     });
 
-    // store apply job
-    app.post("/appliedjob", async (req, res) => {
-      const appliedjobdata = req.body;
-
-      const result = await applidejobsCollection.insertOne({ appliedjobdata });
-      res.send(result);
-    });
-
-    app.post("/evaluateTask", async (req, res) => {
-      const evaluateData = req.body;
-      const result = await evaluateCollection.insertOne(evaluateData);
-      res.send(result);
-    });
-
     //get all allApplyJob by user email
     app.get("/allApplyJob", async (req, res) => {
       let query = {};
@@ -205,117 +198,28 @@ async function run() {
       res.send(result);
     });
 
-    // Upload and applied and submit job
-
     app.put("/appliedjob/:id", async (req, res) => {
-      try {
-        const id = req.params.id;
-        const updateData = req.body;
-
-        // Ensure you have a valid ObjectId for the query
-        const query = { _id: new ObjectId(id) };
-
-        const options = { upsert: true };
-
-        const updateFields = {};
-
-        if (updateData.hasOwnProperty("isApplied")) {
-          updateFields["appliedjobdata.isApplied"] = updateData.isApplied;
-        }
-        if (updateData.hasOwnProperty("coverLetter")) {
-          updateFields["appliedjobdata.coverLetter"] = updateData.coverLetter;
-        }
-        if (updateData.hasOwnProperty("downloadPdf")) {
-          updateFields["appliedjobdata.downloadPdf"] = updateData.downloadPdf;
-        }
-        if (updateData.hasOwnProperty("downloadEvaluate")) {
-          updateFields["appliedjobdata.downloadEvaluate"] =
-            updateData.downloadEvaluate;
-        }
-        if (updateData.hasOwnProperty("feedback")) {
-          updateFields["appliedjobdata.feedback"] = updateData.feedback;
-        }
-        if (updateData.hasOwnProperty("point")) {
-          updateFields["appliedjobdata.point"] = updateData.point;
-        }
-        if (updateData.hasOwnProperty("isEvaluate")) {
-          updateFields["appliedjobdata.isEvaluate"] = updateData.isEvaluate;
-        }
-
-        const updateDoc = {
-          $set: updateFields,
-        };
-
-        const result = await applidejobsCollection.updateOne(
-          query,
-          updateDoc,
-          options
-        );
-
-        if (result.modifiedCount === 1) {
-          res.status(200).json({ message: "Data updated successfully" });
-        } else {
-          res.status(404).json({ message: "Job not found" });
-        }
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" });
-      }
-    });
-
-    // TODO only particular instructor data show his dashboard
-    app.get("/evaluateTasks", async (req, res) => {
-      const query = { "appliedjobdata.isEvaluate": true };
-      const result = await applidejobsCollection.find(query).toArray();
-      res.send(result);
-    });
-
-    // update applied job
-    // app.put("/appliedjob/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const updateData = req.body;
-    //   const query = { _id: new ObjectId(id) };
-    //   const option = { upsert: true };
-    //   const updateDoc = {
-    //     $set: updateData,
-    //   };
-
-    //   const result = await applidejobsCollection.updateOne(
-    //     query,
-    //     updateDoc,
-    //     option
-    //   );
-
-    //   res.send(result);
-    // });
-
-    // app.get("/applyTaskInstructor/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const updateData = req.body;
-
-    //   const query = { _id: new ObjectId(id) };
-    //   const option = { upsert: true };
-    //   const updateDoc = {
-    //     $set: {
-    //       "appliedjobdata.isApplied": updateData.isApplied,
-    //       "appliedjobdata.coverLetter": updateData.coverLetter,
-    //       "appliedjobdata.downloadPdf:": updateData.downloadPdf,
-    //     },
-    //   };
-
-    //   const result = await applidejobsCollection.updateOne(
-    //     query,
-    //     updateDoc,
-    //     option
-    //   );
-
-    //   res.send(result);
-    // });
-
-    app.get("/applyTaskInstructor/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { "appliedjobdata.taskId": id };
-      const result = await applidejobsCollection.find(query).toArray();
+      const updateData = req.body;
+
+      console.log(updateData.isApplyed);
+
+      const query = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+      const updateDoc = {
+        $set: {
+          "appliedjobdata.isApplied": updateData.isApplied,
+          "appliedjobdata.coverLetter": updateData.coverLetter,
+          "appliedjobdata.downloadPdf:": updateData.downloadPdf,
+        },
+      };
+
+      const result = await applidejobsCollection.updateOne(
+        query,
+        updateDoc,
+        option
+      );
+
       res.send(result);
     });
 
@@ -325,31 +229,6 @@ async function run() {
       const query = { _id: new ObjectId(id) };
 
       const result = await jobsCollection.findOne(query);
-      res.send(result);
-    });
-
-    // get all bookmar job by use email
-    app.get("/bookmark", async (req, res) => {
-      const email = req.query.email;
-
-      const query = { BookMarkUserEmail: email };
-      const result = await bookMarkJob.find(query).sort({ _id: -1 }).toArray();
-      res.send(result);
-    });
-
-    // bookMark jbos by user
-    app.post("/bookmark", async (req, res) => {
-      const data = req.body;
-      const result = await bookMarkJob.insertOne(data);
-      res.send(result);
-    });
-
-    // delete bookMark jbos by user
-    app.delete("/bookmark/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { "task._id": id };
-
-      const result = await bookMarkJob.deleteOne(query);
       res.send(result);
     });
 
@@ -373,16 +252,6 @@ async function run() {
       res.send(result);
     });
 
-    // latest blog
-    app.get("/blogslatest", async (req, res) => {
-      const result = await blogsCollection
-        .find()
-        .sort({ _id: -1 })
-        .limit(5)
-        .toArray();
-      res.send(result);
-    });
-
     // posting testimonials feedback
     app.post("/postFeedback", async (req, res) => {
       const body = req.body;
@@ -401,6 +270,64 @@ async function run() {
       res.send(result);
     });
 
+    // Community Features API's
+    // posting share post
+
+    app.post("/communityPosts", async (req, res) => {
+      const postData = req.body;
+      const result = await postsCollection.insertOne(
+        postData
+      );
+      res.send(result);
+    });
+
+    // getting all post data
+    app.get("/posts", async (req, res) => {
+      const result = await postsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // getting single post data
+    app.get("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await postsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // delete single post
+    app.delete("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await postsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // update single post
+    app.patch("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updatePost = {
+        $set: {
+          photo: body.photo,
+          title: body.title,
+          desc: body.desc,
+        },
+      };
+      const result = await postsCollection.updateOne(filter, updatePost);
+      res.send(result);
+    });
+    
+
+    // store apply job
+    app.post("/appliedjob", async (req, res) => {
+      const appliedjobdata = req.body;
+
+      const result = await applidejobsCollection.insertOne({ appliedjobdata });
+      res.send(result);
+    });
+
     // admin dashboard
     // get all client
     app.get("/clients", async (req, res) => {
@@ -416,6 +343,18 @@ async function run() {
     });
 
     // get all users
+    app.get("/moderators", async (req, res) => {
+      try {
+        const query = { moderator: true };
+        const result = await usersCollection.find(query).toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching moderator users:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
     app.get("/allusers", async (req, res) => {
       const allUsers = await usersCollection.find().toArray();
 
@@ -440,6 +379,7 @@ async function run() {
       const result = await SocialMediaCollection.find().toArray();
       res.send(result);
     });
+
     app.get("/social-media/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -447,6 +387,7 @@ async function run() {
       const result = await SocialMediaCollection.findOne(query);
       res.send(result);
     });
+
     app.put("/social-media/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -467,20 +408,82 @@ async function run() {
       );
       res.send(result);
     });
-
-    // delete Taskhnistory route
-
-    app.delete("/taskdelete/:id", async (req, res) => {
-      const id = req.params.id;
-      console.log(id);
-      const query = { _id: new ObjectId(id) };
-
-      const result = await applidejobsCollection.deleteOne(query);
+    // About details update API
+    app.put("/aboutDetails", async (req, res) => {
+      const data = req.body;
+      const query = {};
+      const options = { upsert: false };
+      const updateAbout = {
+        $set: data,
+      };
+      const result = await aboutCollection.updateOne(
+        query,
+        updateAbout,
+        options
+      );
       res.send(result);
     });
+
+    // getting about us data
+    app.get("/aboutDetails", async (req, res) => {
+      const result = await aboutCollection.find().toArray();
+      res.send(result);
+    });
+
+    // delete Task history route
     // applicants
     app.get("/applicants", async (req, res) => {
       const result = await applicantsCollection.find().toArray();
+      res.send(result);
+    });
+
+    //TrendingTasksData
+    app.get("/trendingTasksData", async (req, res) => {
+      const result = await TrendingTasksDataCollection.find().toArray();
+      res.send(result);
+    });
+
+    // categorysData
+    app.get("/categorysData", async (req, res) => {
+      const result = await categorysDataCollection.find().toArray();
+      res.send(result);
+    });
+
+    // recentJobData
+    app.get("/recentJobData", async (req, res) => {
+      const result = await recentJobDataCollection.find().toArray();
+      res.send(result);
+    });
+
+    // post collection insert
+    app.put("/communityPosts/:email", async (req, res) => {
+      const email = req.params.email;
+      const postData = req.body;
+      const query = { email: email };
+      const options = { upsert: true };
+      const updatePost = {
+        $set: postData,
+      };
+
+      const result = await postsCollection.updateOne(
+        query,
+        updatePost,
+        options
+      );
+      res.send(result);
+    });
+
+    // posting team member
+    app.post("/teamMembers", async (req, res) => {
+      const body = req.body;
+      const result = await teamMembersCollection.insertOne(body);
+      res.send(result);
+      console.log(result);
+    });
+
+    // getting all team members
+    app.get("/teamMembers", async (req, res) => {
+      const result = await teamMembersCollection.find().toArray();
       res.send(result);
     });
 
