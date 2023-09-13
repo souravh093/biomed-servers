@@ -497,7 +497,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.json("biomed server is on");
+  res.json("biomed server is on fire");
 });
 
 app.listen(port, () => {
