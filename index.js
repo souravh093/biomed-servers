@@ -342,6 +342,7 @@ async function run() {
       }
     });
 
+    // get all users
     app.get("/moderators", async (req, res) => {
       try {
         const query = { moderator: true };
@@ -358,9 +359,19 @@ async function run() {
       const allUsers = await usersCollection.find().toArray();
 
       const filterUsers = allUsers.filter(
-        (user) => !(user.client || user.moderator || user.admin)
+        (user) => !(user.client || user.admin)
       );
       res.send(filterUsers);
+    });
+
+    // delete all users
+
+    app.delete("/user", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+
+      const deleteUser = await usersCollection.deleteOne(query);
+      res.send(deleteUser);
     });
 
     // social media'
@@ -489,7 +500,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.json("biomed server is on");
+  res.json("biomed server is on fire");
 });
 
 app.listen(port, () => {
