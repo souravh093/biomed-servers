@@ -316,6 +316,7 @@ async function run() {
       const result = await postsCollection.updateOne(filter, updatePost);
       res.send(result);
     });
+    
 
     // store apply job
     app.post("/appliedjob", async (req, res) => {
