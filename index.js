@@ -74,7 +74,6 @@ async function run() {
     const postsCollection = client.db("biomedDB").collection("posts");
     const aboutCollection = client.db("biomedDB").collection("about");
 
-
     const teamMembersCollection = client
       .db("biomedDB")
       .collection("teamMembers");
@@ -275,9 +274,7 @@ async function run() {
 
     app.post("/communityPosts", async (req, res) => {
       const postData = req.body;
-      const result = await postsCollection.insertOne(
-        postData
-      );
+      const result = await postsCollection.insertOne(postData);
       res.send(result);
     });
 
@@ -303,7 +300,7 @@ async function run() {
       res.send(result);
     });
 
-    // update single post
+    // update single postP
     app.patch("/posts/:id", async (req, res) => {
       const id = req.params.id;
       const body = req.body;
@@ -318,13 +315,59 @@ async function run() {
       const result = await postsCollection.updateOne(filter, updatePost);
       res.send(result);
     });
-    
 
     // store apply job
     app.post("/appliedjob", async (req, res) => {
       const appliedjobdata = req.body;
 
       const result = await applidejobsCollection.insertOne({ appliedjobdata });
+      res.send(result);
+    });
+
+    // get applied task by email
+
+    app.get("/get/appliedtask/:email", async (req, res) => {
+      let email = req.params.email;
+      const query = { "appliedjobdata.instrucurEmail": email };
+      const result = await applidejobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.put("/put/appliedtask/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+
+      try {
+        const result = await applidejobsCollection.updateOne(
+          query,
+          {
+            $push: {
+              "appliedjobdata.message": data,
+            },
+          },
+          options
+        );
+
+        if (result.modifiedCount === 1) {
+          return res
+            .status(200)
+            .json({ message: "Message added successfully" });
+        } else {
+          return res.status(404).json({ error: "Document not found" });
+        }
+      } catch (error) {
+        console.error("Error adding message:", error);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+    });
+
+    app.get("/get/appliedtask/:email", async (req, res) => {
+      let email = req.params.email;
+      const query = { email: email };
+      const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
     });
 
