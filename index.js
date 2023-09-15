@@ -332,6 +332,13 @@ async function run() {
       const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
     });
+    
+    app.get("/user/appliedtask/:email", async (req, res) => {
+      let email = req.params.email;
+      const query = { "appliedjobdata.email": email };
+      const result = await applidejobsCollection.find(query).toArray();
+      res.send(result);
+    });
 
     app.put("/put/appliedtask/:id", async (req, res) => {
       const id = req.params.id;
@@ -364,12 +371,20 @@ async function run() {
       }
     });
 
-    app.get("/get/appliedtask/:email", async (req, res) => {
-      let email = req.params.email;
-      const query = { email: email };
-      const result = await applidejobsCollection.find(query).toArray();
-      res.send(result);
+    // app.get("/appliedtask/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) };
+    //   const result = await applidejobsCollection.findOne(query);
+    //   res.send(result);
+    // });
+
+    app.get("/getAppliedById/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await applidejobsCollection.findOne(query);
+      res.send(result)
     });
+
 
     // admin dashboard
     // get all client
