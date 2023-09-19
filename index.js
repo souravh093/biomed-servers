@@ -574,7 +574,7 @@ async function run() {
       res.send(result);
     });
 
-    // update single post
+    // update single postP
     app.patch("/posts/:id", async (req, res) => {
       const id = req.params.id;
       const body = req.body;
@@ -629,6 +629,67 @@ async function run() {
       res.send(result);
     });
 
+    // get applied task by email
+
+    app.get("/get/appliedtask/:email", async (req, res) => {
+      let email = req.params.email;
+      const query = { "appliedjobdata.instrucurEmail": email };
+      const result = await applidejobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/user/appliedtask/:email", async (req, res) => {
+      let email = req.params.email;
+      const query = { "appliedjobdata.email": email };
+      const result = await applidejobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.put("/put/appliedtask/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+
+      try {
+        const result = await applidejobsCollection.updateOne(
+          query,
+          {
+            $push: {
+              "appliedjobdata.message": data,
+            },
+          },
+          options
+        );
+
+        if (result.modifiedCount === 1) {
+          return res
+            .status(200)
+            .json({ message: "Message added successfully" });
+        } else {
+          return res.status(404).json({ error: "Document not found" });
+        }
+      } catch (error) {
+        console.error("Error adding message:", error);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+    });
+
+    // app.get("/appliedtask/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) };
+    //   const result = await applidejobsCollection.findOne(query);
+    //   res.send(result);
+    // });
+
+    app.get("/getAppliedById/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await applidejobsCollection.findOne(query);
+      res.send(result);
+    });
+
     // admin dashboard
     // get all client
     app.get("/clients", verifyJWT, verifyAdmin, async (req, res) => {
@@ -642,6 +703,7 @@ async function run() {
       }
     });
 
+    // get all users
     app.get("/moderators", async (req, res) => {
       try {
         const query = { moderator: true };
@@ -658,7 +720,7 @@ async function run() {
       const allUsers = await usersCollection.find().toArray();
 
       const filterUsers = allUsers.filter(
-        (user) => !(user.client || user.moderator || user.admin)
+        (user) => !(user.client || user.admin)
       );
       res.send(filterUsers);
     });
@@ -712,6 +774,15 @@ async function run() {
       const query = { email: email };
       const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
+    });
+
+    // delete all users
+    app.delete("/user", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+
+      const deleteUser = await usersCollection.deleteOne(query);
+      res.send(deleteUser);
     });
 
     // social media'
@@ -888,7 +959,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.json("biomed server is on");
+  res.json("biomed server is on fire");
 });
 
 app.listen(port, () => {
