@@ -461,12 +461,12 @@ async function run() {
       }
     });
 
-    // TODO only particular instructor data show his dashboard
+    // get all evaluate user data
     app.get("/evaluateTasks/:email", async (req, res) => {
       const email = req.params.email;
       const query = {
         "appliedjobdata.isEvaluate": true,
-        "appliedjobdata.instructorEmail": email,
+        "appliedjobdata.instrucurEmail": email,
       };
       const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
