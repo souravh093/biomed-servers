@@ -143,6 +143,9 @@ async function run() {
       .collection("teamMembers");
     const bookMarkJob = client.db("biomedDB").collection("bookMarkJob");
     const paymentCollection = client.db("biomedDB").collection("payment");
+    const favouritePostsCollection = client
+      .db("biomedDB")
+      .collection("favouritePosts");
 
     // generate client secret
     app.post("/create-payment-intent", verifyJWT, async (req, res) => {
@@ -329,6 +332,36 @@ async function run() {
       res.send(result);
     });
 
+    // get single job
+    app.get("/get_jobs_data/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await jobsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // update single job
+    app.put("/update_jobs_data/:id", async (req, res) => {
+      const id = req.params.id;
+      const task = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: false };
+      const updateTask = {
+        $set: task,
+      };
+
+      const result = await jobsCollection.updateOne(query, updateTask, options);
+      res.send(result);
+    });
+
+    // delete single job
+    app.delete("/delete_jobs_data/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await jobsCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // get all jobs
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().sort({ _id: -1 }).toArray();
@@ -355,7 +388,7 @@ async function run() {
     // recent application showing in the instructor dashboard
     app.get("/recentApplications/:email", async (req, res) => {
       const email = req.params.email;
-      const query = { "appliedjobdata.instructorEmail": email };
+      const query = { "appliedjobdata.instrucurEmail": email };
       const result = await applidejobsCollection
         .find(query)
         .sort({ _id: -1 })
@@ -391,7 +424,7 @@ async function run() {
 
     app.get("/getapplicantemail/:email", async (req, res) => {
       const email = req.params.email;
-      const query = { "appliedjobdata.instructorEmail": email };
+      const query = { "appliedjobdata.instrucurEmail": email };
       const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
     });
@@ -461,12 +494,32 @@ async function run() {
       }
     });
 
+    // get user applied task
+    app.get("/user_applied_task/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = {
+        "appliedjobdata.isApplied": true,
+        "appliedjobdata.email": email,
+      };
+      const result = await applidejobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // TODO only particular instructor data show his dashboard
     app.get("/evaluateTasks/:email", async (req, res) => {
       const email = req.params.email;
       const query = {
         "appliedjobdata.isEvaluate": true,
-        "appliedjobdata.instructorEmail": email,
+        "appliedjobdata.instrucurEmail": email,
+      };
+      const result = await applidejobsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // TODO only particular instructor data show his dashboard
+    app.get("/evaluateTasks", async (req, res) => {
+      const query = {
+        "appliedjobdata.isEvaluate": true,
       };
       const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
@@ -525,6 +578,34 @@ async function run() {
       res.send(result);
     });
 
+    // Delete blogs
+    app.delete("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // Update blog
+    app.patch("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateBlog = {
+        $set: {
+          thumbnail: body.thumbnail,
+          title: body.title,
+          writer: body.writer,
+          writing_date: body.writing_date,
+          intro: body.intro,
+          description: body.description,
+          conclusion: body.conclusion,
+        },
+      };
+      const result = await blogsCollection.updateOne(query, updateBlog);
+      res.send(result);
+    });
+    
     // posting testimonials feedback
     app.post("/postFeedback", async (req, res) => {
       const body = req.body;
@@ -574,7 +655,7 @@ async function run() {
       res.send(result);
     });
 
-    // update single postP
+    // update single post
     app.patch("/posts/:id", async (req, res) => {
       const id = req.params.id;
       const body = req.body;
@@ -621,12 +702,40 @@ async function run() {
       res.send(result);
     });
 
+    // Getting post category
+    app.get("/categories/:category", async (req, res) => {
+      console.log(req.params.category);
+      if (
+        req.params.category == "General Discussion" ||
+        req.params.category == "Technology and Science" ||
+        req.params.category == "Nature and Beauty" ||
+        req.params.category == "Entertainment" ||
+        req.params.category == "Lifestyle and Health" ||
+        req.params.category == "News and Current Events"
+      ) {
+        const cursor = postsCollection.find({
+          category: req.params.category,
+        });
+        const result = await cursor.toArray();
+        return res.send(result);
+      }
+    });
+
     // store apply job
     app.post("/appliedjob", async (req, res) => {
       const appliedjobdata = req.body;
 
       const result = await applidejobsCollection.insertOne({ appliedjobdata });
       res.send(result);
+    });
+
+    // delete all users
+    app.delete("/user", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+
+      const deleteUser = await usersCollection.deleteOne(query);
+      res.send(deleteUser);
     });
 
     // get applied task by email
@@ -690,6 +799,14 @@ async function run() {
       res.send(result);
     });
 
+    // store apply job
+    app.post("/appliedjob", async (req, res) => {
+      const appliedjobdata = req.body;
+
+      const result = await applidejobsCollection.insertOne({ appliedjobdata });
+      res.send(result);
+    });
+
     // admin dashboard
     // get all client
     app.get("/clients", verifyJWT, verifyAdmin, async (req, res) => {
@@ -703,7 +820,6 @@ async function run() {
       }
     });
 
-    // get all users
     app.get("/moderators", async (req, res) => {
       try {
         const query = { moderator: true };
@@ -716,11 +832,11 @@ async function run() {
       }
     });
 
-    app.get("/allusers", verifyJWT, verifyAdmin, async (req, res) => {
+    app.get("/allusers", async (req, res) => {
       const allUsers = await usersCollection.find().toArray();
 
       const filterUsers = allUsers.filter(
-        (user) => !(user.client || user.admin)
+        (user) => !(user.client || user.moderator || user.admin)
       );
       res.send(filterUsers);
     });
@@ -774,15 +890,6 @@ async function run() {
       const query = { email: email };
       const result = await applidejobsCollection.find(query).toArray();
       res.send(result);
-    });
-
-    // delete all users
-    app.delete("/user", async (req, res) => {
-      const email = req.query.email;
-      const query = { email: email };
-
-      const deleteUser = await usersCollection.deleteOne(query);
-      res.send(deleteUser);
     });
 
     // social media'
@@ -867,15 +974,17 @@ async function run() {
       res.send(result);
     });
 
-    // categorysData
-    app.get("/categorysData", async (req, res) => {
-      const result = await categorysDataCollection.find().toArray();
+    // specie email base recenttask
+    app.get("/specieRecentTask/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await jobsCollection.find(query).toArray();
       res.send(result);
     });
 
-    // recentJobData
-    app.get("/recentJobData", async (req, res) => {
-      const result = await recentJobDataCollection.find().toArray();
+    // categorysData
+    app.get("/categorysData", async (req, res) => {
+      const result = await categorysDataCollection.find().toArray();
       res.send(result);
     });
 
@@ -959,9 +1068,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.json("biomed server is on fire");
+  res.json("biomed server is on");
 });
 
 app.listen(port, () => {
-  console.log(`Sports is  on Port ${port}`);
+  console.log(`Biomed is  on Port ${port}`);
 });
