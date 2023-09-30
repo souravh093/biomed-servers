@@ -332,6 +332,36 @@ async function run() {
       res.send(result);
     });
 
+    // get single job
+    app.get("/get_jobs_data/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await jobsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // update single job
+    app.put("/update_jobs_data/:id", async (req, res) => {
+      const id = req.params.id;
+      const task = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: false };
+      const updateTask = {
+        $set: task,
+      };
+
+      const result = await jobsCollection.updateOne(query, updateTask, options);
+      res.send(result);
+    });
+
+    // delete single job
+    app.delete("/delete_jobs_data/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await jobsCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // get all jobs
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().sort({ _id: -1 }).toArray();
@@ -557,22 +587,25 @@ async function run() {
     });
 
     // Update blog
-    app.put("/blogs/:id", async (req, res) => {
+    app.patch("/blogs/:id", async (req, res) => {
       const id = req.params.id;
-      const updateData = req.body;
+      const body = req.body;
       const query = { _id: new ObjectId(id) };
-      const options = { upsert: true };
       const updateBlog = {
-        $set: updateData,
+        $set: {
+          thumbnail: body.thumbnail,
+          title: body.title,
+          writer: body.writer,
+          writing_date: body.writing_date,
+          intro: body.intro,
+          description: body.description,
+          conclusion: body.conclusion,
+        },
       };
-      const result = await blogsCollection.updateOne(
-        query,
-        updateBlog,
-        options
-      );
+      const result = await blogsCollection.updateOne(query, updateBlog);
       res.send(result);
     });
-
+    
     // posting testimonials feedback
     app.post("/postFeedback", async (req, res) => {
       const body = req.body;
